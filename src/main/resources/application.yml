@@ -1,0 +1,26 @@
+
+  server:
+    port: 8080
+
+  spring:
+    application:
+      name: observability-demo
+    zipkin:
+      base-url: http://localhost:9411
+      enabled: true
+      sender:
+        type: web
+    sleuth:
+      sampler:
+        probability: 1.0  # Trace every request
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: "*"
+    metrics:
+      export:
+        prometheus:
+          enabled: true
+
