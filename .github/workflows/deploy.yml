@@ -1,0 +1,41 @@
+name: Deploy to AWS Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main  # or your deploy branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21' # or 11, based on your project
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Generate deployment zip
+        run: |
+          mkdir deployment
+          cp target/*.jar deployment/application.jar
+          cd deployment
+          zip -r ../app.zip .
+
+      - name: Deploy to Elastic Beanstalk
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: backend
+          environment_name: Backend-dev
+          region: us-east-1  # Change if using a different region
+          version_label: v-${{ github.run_number }}
+          deployment_package: app.zip
